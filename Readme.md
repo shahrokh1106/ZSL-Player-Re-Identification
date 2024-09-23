@@ -5,3 +5,11 @@ This is the official repository for the paper titled "Exploring the Application 
 ## Re-Identification
 The "REID" folder contains the prepared Re-ID datasets and the Python scripts used to get the results shown in the paper. 
 
+### Datasets
+[Netball Re-ID dataset](REID/datasets/ReidDataset_Netball)
+
+[Rugby Re-ID dataset](REID/datasets/ReidDataset_Rugby)
+
+[Masked Netball Re-ID dataset](REID/datasets/ReidDataset_Netball_Masked)
+
+[Masked Rugby Re-ID dataset](REID/datasets/ReidDataset_Rugby_Masked)
