@@ -86,7 +86,7 @@ def GetScores (reid_feature_dataset,dataset_name, model_name):
 def main(reid_dataset, dataset_name):
     # Getting the features-->out_features
     pass
-    # GetScores (out_features,dataset_name, model_name = "Part-BPBreID")
+    # GetScores (out_features,dataset_name, model_name = "PRTreID")
 
 if __name__ == "__main__":
     dataset_names = ["ReidDataset_Rugby", "ReidDataset_Rugby_Masked", "ReidDataset_Netball", "ReidDataset_Netball_Masked"]

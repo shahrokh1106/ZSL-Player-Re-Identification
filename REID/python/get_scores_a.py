@@ -49,8 +49,8 @@ def GetScores (reid_feature_dataset,dataset_name, model_name):
     def compute_distances(query, gallery, metric='cosine'):
         if metric == 'cosine':
             similarities = cosine_similarity([query], gallery)[0]
-            distances = 1 - similarities  # Convert similarity to distance
-        else:  # Euclidean distance
+            distances = 1 - similarities  
+        else:  
             distances = np.linalg.norm(gallery - query, axis=1)
         return distances
     
@@ -62,7 +62,7 @@ def GetScores (reid_feature_dataset,dataset_name, model_name):
             rank = np.where(ranked_indices == positive_idx)[0][0] + 1  # Rank starts at 1
             return 1.0 / rank
         except IndexError:
-            return 0.0  # If positive_idx is not found in ranked_indices
+            return 0.0  
     
 
     top_1_results = []
