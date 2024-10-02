@@ -1,5 +1,19 @@
 import os
 import random
+import sys
+import argparse
+import torch
+import torchreid
+
+
+MAIN_PATH = os.path.join("REID","bpbreid")
+sys.path.append(MAIN_PATH)
+sys.path.insert(0, os.path.abspath("REID/bpbreid"))
+
+
+import torchreid.scripts.main as bpbreid_main
+from torchreid.tools.feature_extractor import FeatureExtractor
+#from torchreid.getFeatures import extract
 import numpy as np
 import glob
 import pandas as pd
@@ -85,11 +99,94 @@ def GetScores (reid_feature_dataset,dataset_name, model_name):
 
 def main(reid_dataset, dataset_name):
     # Getting the features-->out_features
-    pass
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument(
+        '--config-file', type=str, default='', help='path to config file'
+    )
+    parser.add_argument(
+        '-s',
+        '--sources',
+        type=str,
+        nargs='+',
+        help='source datasets (delimited by space)'
+    )
+    parser.add_argument(
+        '-t',
+        '--targets',
+        type=str,
+        nargs='+',
+        help='target datasets (delimited by space)'
+    )
+    parser.add_argument(
+        '--transforms', type=str, nargs='+', help='data augmentation'
+    )
+    parser.add_argument(
+        '--root', type=str, default='', help='path to data root'
+    )
+    parser.add_argument(
+        '--save_dir', type=str, default='', help='path to output root dir'
+    )
+    parser.add_argument(
+        'opts',
+        default=None,
+        nargs=argparse.REMAINDER,
+        help='Modify config options using the command-line'
+    )
+    parser.add_argument(
+        '--job-id',
+        type=int,
+        default=None,
+        help='Slurm job id'
+    )
+    parser.add_argument(
+        '--inference-enabled',
+        type=bool,
+        default=False,
+    )
+    args = parser.parse_args()
+
+    cfg = bpbreid_main.build_config(args, args.config_file)
+
+    engine, model = bpbreid_main.build_torchreid_model_engine(cfg)
+
+    print(dataset_name)
+
+    extractor = FeatureExtractor(
+        cfg,
+        device='cpu',
+        model = model
+    )
+
+    #outTensor =[]
+    out = []
+    proc =0
+    for item in reid_dataset:
+        print(proc)
+        proc=proc+1
+
+        result = extractor(item)
+        #outTensor.append(result)
+        parts = result[0]['parts']
+        parts_reshaped = parts.view(11, -1)
+
+        foreg= result[0]['foreg']
+        #out.append(foreg.numpy())
+
+        r = torch.cat((parts_reshaped, foreg), dim=1)
+
+        out.append(r.numpy())
+
+    GetScores(out, dataset_name, model_name="BPBreID")
+
+
+    print("Finished dataset")
+    #pass
     # GetScores (out_features,dataset_name, model_name = "BPBreID")
 
 if __name__ == "__main__":
     dataset_names = ["ReidDataset_Rugby", "ReidDataset_Rugby_Masked", "ReidDataset_Netball", "ReidDataset_Netball_Masked"]
     for dataset_name in dataset_names:
-        reid_dataset = load_reid_dataset (destination = "REID/datasets/"+dataset_name)  
+        reid_dataset = load_reid_dataset (destination = "REID/datasets/"+dataset_name) #gibran, changed destination = "REID/datasets/"+dataset_name  
         main(reid_dataset, dataset_name)
