@@ -5,6 +5,19 @@ import glob
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 
+import sys
+import argparse
+import torch
+
+MAIN_PATH = os.path.join("REID","prtreid")
+sys.path.append(MAIN_PATH)
+sys.path.insert(0, os.path.abspath("REID/prtreid"))
+
+
+import prtreid.scripts.main as prtreid_main
+from prtreid.tools.feature_extractor import FeatureExtractor
+
+
 # use this function to load the dataset
 def load_reid_dataset (destination):
     reid_dataset = []
@@ -85,7 +98,90 @@ def GetScores (reid_feature_dataset,dataset_name, model_name):
 
 def main(reid_dataset, dataset_name):
     # Getting the features-->out_features
-    pass
+
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument(
+        '--config-file', type=str, default='', help='path to config file'
+    )
+    parser.add_argument(
+        '-s',
+        '--sources',
+        type=str,
+        nargs='+',
+        help='source datasets (delimited by space)'
+    )
+    parser.add_argument(
+        '-t',
+        '--targets',
+        type=str,
+        nargs='+',
+        help='target datasets (delimited by space)'
+    )
+    parser.add_argument(
+        '--transforms', type=str, nargs='+', help='data augmentation'
+    )
+    parser.add_argument(
+        '--root', type=str, default='', help='path to data root'
+    )
+    parser.add_argument(
+        '--save_dir', type=str, default='', help='path to output root dir'
+    )
+    parser.add_argument(
+        'opts',
+        default=None,
+        nargs=argparse.REMAINDER,
+        help='Modify config options using the command-line'
+    )
+    parser.add_argument(
+        '--job-id',
+        type=int,
+        default=None,
+        help='Slurm job id'
+    )
+    parser.add_argument(
+        '--inference-enabled',
+        type=bool,
+        default=False,
+    )
+    args = parser.parse_args()
+
+    cfg = prtreid_main.build_config(args, args.config_file)
+
+    engine, model = prtreid_main.build_torchreid_model_engine(cfg)
+
+    print(dataset_name)
+
+    extractor = FeatureExtractor(
+        cfg,
+        device='cpu',
+        model = model
+    )
+
+    #outTensor =[]
+    out = []
+    proc =0
+    for item in reid_dataset:
+        print(proc)
+        proc=proc+1
+
+        result = extractor(item)
+        #outTensor.append(result)
+        parts = result[0]['parts']
+        parts_reshaped = parts.view(11, -1)
+
+        foreg= result[0]['foreg']
+        #out.append(foreg.numpy())
+
+        r = torch.cat((parts_reshaped, foreg), dim=1)
+
+        out.append(r.numpy())
+
+    GetScores(out, dataset_name, model_name="PRTreID")
+
+    print("Finished dataset")
+    #pass
     # GetScores (out_features,dataset_name, model_name = "PRTreID")
 
 if __name__ == "__main__":

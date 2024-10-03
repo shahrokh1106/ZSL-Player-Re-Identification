@@ -1,5 +1,5 @@
 data:
-  root: 'C:\Users\kamehouse\Desktop\repo\ZSL_paper\ZSL-Player-Re-Identification\REID\bpbreid\reid-data'
+  root: ''
   sources: ['market1501']
   targets: ['market1501']
   height: 384
