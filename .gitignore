@@ -1,4 +1,10 @@
 /Untitled-1.ipynb
+/Untitled-2.ipynb
+
 /REID/heatmaps/*
 /REID/sportsreid/models/*
-
+/ACT-RECOG/datasets/ActDataset_Rugby/*
+/ACT-RECOG/datasets/ActDataset_Netball/*
+/balls.png
+/ACT-RECOG
+/.gitignore
