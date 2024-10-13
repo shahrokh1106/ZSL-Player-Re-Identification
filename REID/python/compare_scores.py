@@ -6,7 +6,7 @@ import numpy as np
 from matplotlib.patches import Patch
 import matplotlib.image as mpimg
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
-
+import cv2
 
 def darken_color(hex_color, factor=0.8):
     # Convert hex to RGB
@@ -79,7 +79,7 @@ def main(sport_name = "rugby"):
     x = np.arange(len(model_names))
     width = 0.2
 
-    fig, ax = plt.subplots(figsize=(20, 8))
+    fig, ax = plt.subplots(figsize=(28, 10))
     ax.axhline(y=20, color='gray', linestyle='--', linewidth=0.5, zorder=0)
     ax.axhline(y=40, color='gray', linestyle='--', linewidth=0.5, zorder=0)
     ax.axhline(y=60, color='gray', linestyle='--', linewidth=0.5, zorder=0)
@@ -105,13 +105,17 @@ def main(sport_name = "rugby"):
     rects8 = ax.bar(x + 1.5*width, line4, adjusted_width, color=darken_color(colors[3], factor=dark_factor),label='mAP (masked)')
 
     # Labels and legends
-    ax.set_xlabel('Model Names', labelpad=10, fontsize=16)
-    ax.set_ylabel('Accuracy (%)', fontsize=16)
+    if sport_name=="rugby":
+        ax.set_xlabel('(a)', labelpad=10, fontsize=30)
+    else:
+        ax.set_xlabel('(b)', labelpad=10, fontsize=30)
+    ax.set_ylabel('Accuracy (%)', fontsize=25)
     ax.set_xticks(x)
-    ax.set_xticklabels(model_names, fontsize=14)
+    ax.set_xticklabels(model_names, fontsize=25)
     # custom_patch = Patch(edgecolor='black', facecolor='none', label='Masked')
-    ax.legend(handles=[rects1, rects2,rects3,rects4, rects5,rects6,rects7,rects8], loc='upper left',ncol=2,fontsize=13)
+    ax.legend(handles=[rects1, rects2,rects3,rects4, rects5,rects6,rects7,rects8], loc='upper left',ncol=2,fontsize=20)
     plt.xticks(rotation=40, ha='right')
+    plt.yticks(fontsize=25)
 
     # Group labels
     group_labels = ['Person ReID Models', 'Player ReID Models']
@@ -120,29 +124,32 @@ def main(sport_name = "rugby"):
     for (start, end), label in zip(group_positions, group_labels):
         mid = (start + end) / 2
         plt.plot([start-0.5, end+0.5], [-0.4, -0.4], color='black', lw=9.5, clip_on=False)
-        ax.text(mid, -0.3, label, ha='center', va='center', fontsize=14, bbox=dict(facecolor='white', edgecolor='black', boxstyle='round,pad=0.1'))
+        ax.text(mid, -0.3, label, ha='center', va='center', fontsize=20, bbox=dict(facecolor='white', edgecolor='black', boxstyle='round,pad=0.1'))
 
     if sport_name=="rugby":
         img = mpimg.imread(os.path.join('REID','figs','rugby_sample.jpg'))
         img_masked = mpimg.imread(os.path.join('REID','figs','rugby_sample_masked.jpg'))
-        imagebox = OffsetImage(img, zoom=0.65) 
-        imagebox_masked = OffsetImage(img_masked, zoom=0.65) 
-        ax.add_artist(AnnotationBbox(imagebox, (5.9,74), frameon=True))
-        ax.add_artist(AnnotationBbox(imagebox_masked, (7.1,74), frameon=True))
+        imagebox = OffsetImage(img, zoom=0.7) 
+        imagebox_masked = OffsetImage(img_masked, zoom=0.7) 
+        ax.add_artist(AnnotationBbox(imagebox, (7.0,73), frameon=True))
+        ax.add_artist(AnnotationBbox(imagebox_masked, (7.0,25), frameon=True))
     else:
         img = mpimg.imread(os.path.join('REID','figs','netball_sample.jpg'))
         img_masked = mpimg.imread(os.path.join('REID','figs','netball_sample_masked.jpg'))
-        imagebox = OffsetImage(img, zoom=0.25) 
-        imagebox_masked = OffsetImage(img_masked, zoom=0.25) 
-        ax.add_artist(AnnotationBbox(imagebox, (5.9,75), frameon=True))
-        ax.add_artist(AnnotationBbox(imagebox_masked, (7.1,75), frameon=True))
+        imagebox = OffsetImage(img, zoom=0.285)
+        imagebox_masked = OffsetImage(img_masked, zoom=0.285) 
+        ax.add_artist(AnnotationBbox(imagebox, (7.0,73), frameon=True))
+        ax.add_artist(AnnotationBbox(imagebox_masked, (7.0,25), frameon=True))
 
     # Adjust limits
     ax.set_ylim(0, 100)
     plt.tight_layout()
     plt.savefig("REID/figs/scores_"+sport_name+".png")
     plt.close()
-
+    rugby_scores = cv2.imread("REID/figs/scores_rugby.png")
+    netball_scores = cv2.imread("REID/figs/scores_netball.png")
+    stacked = np.vstack((rugby_scores, netball_scores))
+    cv2.imwrite("REID/figs/scores_rugby_netball.png",stacked)
 
 if __name__ == "__main__":
     main(sport_name = "rugby")
